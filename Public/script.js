@@ -18,18 +18,20 @@ function formatNumber(num) {
 
 function getCountryData(data) {
     var data = data;
+    LastUpdated = ConvertDate(data.Date);
+    displayDate(LastUpdated);
     //console.log(data.Date);
     console.log(data);
 
     var areaAndPop = {  usPop:327000000, usArea:3800000, italyPop:60500000, italyArea:116347, spainPop:46600000, spainArea:195364, 
                         germanyPop:82800000, germanyArea:67051, francePop:67000000, franceArea:248573, ukPop:66400000,ukArea:791900};
 
-    us = returnCountrydata(data["Countries"][234],areaAndPop.usPop,areaAndPop.usArea);
-    italy = returnCountrydata(data["Countries"][107],areaAndPop.italyPop,areaAndPop.italyArea);
-    spain = returnCountrydata(data["Countries"][206],areaAndPop.spainPop,areaAndPop.spainArea);
-    germany = returnCountrydata(data["Countries"][80],areaAndPop.germanyPop,areaAndPop.germanyArea);
+    us = returnCountrydata(data["Countries"][236],areaAndPop.usPop,areaAndPop.usArea);
+    italy = returnCountrydata(data["Countries"][108],areaAndPop.italyPop,areaAndPop.italyArea);
+    spain = returnCountrydata(data["Countries"][208],areaAndPop.spainPop,areaAndPop.spainArea);
+    germany = returnCountrydata(data["Countries"][81],areaAndPop.germanyPop,areaAndPop.germanyArea);
     france = returnCountrydata(data["Countries"][74],areaAndPop.francePop,areaAndPop.franceArea);
-    uk = returnCountrydata(data["Countries"][233],areaAndPop.ukPop,areaAndPop.ukArea);
+    uk = returnCountrydata(data["Countries"][235],areaAndPop.ukPop,areaAndPop.ukArea);
 
     //let proccessedData = {0:{us},1:{italy},2:{spain},3:{germany},4:{france},5:{uk}};
     proccessedData = {us,italy,spain,germany,france,uk};
@@ -39,7 +41,6 @@ function getCountryData(data) {
 };
 
 function returnCountrydata(data,pop,area) {
-    LastUpdated = data.Date;
     Country = data.Country;
     Confirmed = data.TotalConfirmed;
     Pop = pop;
@@ -50,7 +51,7 @@ function returnCountrydata(data,pop,area) {
     percentOfPopDeath = ((Deaths / pop) * 100).toFixed(2);
     percentOfPopRecovered = ((Recovered / pop) * 100).toFixed(2);
 
-        return {Date:LastUpdated,Country: Country, pop: pop, Area: Area, ConfirmedCases:Confirmed, casesPerThousand: CasesPerThousand, TotalRecovered: Recovered, TotalDeaths: Deaths, percentOfPopDeath: percentOfPopDeath, percentOfPopRecovered: percentOfPopRecovered};
+        return {Country: Country, pop: pop, Area: Area, ConfirmedCases:Confirmed, casesPerThousand: CasesPerThousand, TotalRecovered: Recovered, TotalDeaths: Deaths, percentOfPopDeath: percentOfPopDeath, percentOfPopRecovered: percentOfPopRecovered};
 
 }
 
@@ -88,10 +89,6 @@ var displayData = (task) => {
     let casesPerThousandElement = document.createElement('td');
     casesPerThousandElement.innerText = task['casesPerThousand'];
 
-    let LastUpdatedElement = document.getElementById('Date');
-    LastUpdatedElement.innerText = task['Date'];
-
-
     rowElement.appendChild(countryElement);
     rowElement.appendChild(popElement);
     rowElement.appendChild(sizeElement);
@@ -102,6 +99,13 @@ var displayData = (task) => {
     rowElement.appendChild(RecoveredPercentElement);
     rowElement.appendChild(casesPerThousandElement);
     document.getElementById("table").appendChild(rowElement);
+}
+
+var displayDate = (task) => {
+
+    let LastUpdatedElement = document.getElementById('Date');
+    LastUpdatedElement.innerText = task['date'] + " @ " + task['time'] + "UTC";
+
 }
 
 let initListOfTasks = (data) => {
@@ -119,6 +123,14 @@ let initListOfTasks = (data) => {
         //console.log(a[key]);
     });
 };
+
+function ConvertDate (date) {
+    var LastUpdated = date;
+    var array = LastUpdated.split("T",2);
+    date = array[0];
+    time = array[1].replace('Z',"");
+    return {date:date, time: time}
+}
 
 window.onload = function(){
 load = setInterval(function(){
