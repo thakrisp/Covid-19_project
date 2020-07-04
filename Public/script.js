@@ -10,18 +10,22 @@ fetch("/countries", {
     getCountryData(data);
   })
   .catch((err) => {
-    console.error(err);
+    console.log(err);
   });
 
+//adds comas to case numbers
 function formatNumber(num) {
   return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 }
 
+//taking data from COVID-19 API and return collected data from different countries.
 function getCountryData(data) {
   var data = data;
   LastUpdated = ConvertDate(data.Date);
   displayDate(LastUpdated);
   console.log(data);
+
+  proccessedData = {};
 
   var areaAndPop = {
     usPop: 327000000,
@@ -38,55 +42,59 @@ function getCountryData(data) {
     ukArea: 791900,
   };
 
-/*   var size = Object.keys(data["Countries"]).length;
-  
-  for (i=0; i < size; i++) {
+  //var size = Object.keys(data["Countries"]).length;
 
-      countryCheck = data["Countries"][i].Country;
-      
-      if(countryCheck === "United States of America" || countryCheck === "Italy" || countryCheck === "Spain" || countryCheck === "Germany" || countryCheck === "France" || countryCheck === "United Kingdom") {
-          //console.log(data["Countries"][i].Country);
-          console.log(i);
-      };
-  } */
-
-  //having an issue here.The source data keeps changing values so daily I have to update the country number.
-  //should I break these into there seperate functions and just return if I dont receive the correct conutry name.
-  us = returnCountrydata(
-    data["Countries"][235],
-    areaAndPop.usPop,
-    areaAndPop.usArea
-  );
-  italy = returnCountrydata(
-    data["Countries"][107],
-    areaAndPop.italyPop,
-    areaAndPop.italyArea
-  );
-  spain = returnCountrydata(
-    data["Countries"][207],
-    areaAndPop.spainPop,
-    areaAndPop.spainArea
-  );
-  germany = returnCountrydata(
-    data["Countries"][80],
-    areaAndPop.germanyPop,
-    areaAndPop.germanyArea
-  );
-  france = returnCountrydata(
-    data["Countries"][73],
-    areaAndPop.francePop,
-    areaAndPop.franceArea
-  );
-  uk = returnCountrydata(
-    data["Countries"][234],
-    areaAndPop.ukPop,
-    areaAndPop.ukArea
-  );
-
+  for (i = 0; i < Object.keys(data["Countries"]).length; i++) {
+    if (data["Countries"][i].Country === "United States of America") {
+      //console.log(data["Countries"][i].Country + ": " + i);
+      us = returnCountrydata(
+        data["Countries"][i],
+        areaAndPop.usPop,
+        areaAndPop.usArea
+      );
+    } else if (data["Countries"][i].Country === "Italy") {
+      //console.log(data["Countries"][i].Country + ": " + i);
+      italy = returnCountrydata(
+        data["Countries"][i],
+        areaAndPop.italyPop,
+        areaAndPop.italyArea
+      );
+    } else if (data["Countries"][i].Country === "Spain") {
+      //console.log(data["Countries"][i].Country + ": " + i);
+      spain = returnCountrydata(
+        data["Countries"][i],
+        areaAndPop.spainPop,
+        areaAndPop.spainArea
+      );
+    } else if (data["Countries"][i].Country === "Germany") {
+      //console.log(data["Countries"][i].Country + ": " + i);
+      germany = returnCountrydata(
+        data["Countries"][i],
+        areaAndPop.germanyPop,
+        areaAndPop.germanyArea
+      );
+    } else if (data["Countries"][i].Country === "France") {
+      //console.log(data["Countries"][i].Country + ": " + i);
+      france = returnCountrydata(
+        data["Countries"][i],
+        areaAndPop.francePop,
+        areaAndPop.franceArea
+      );
+    } else if (data["Countries"][i].Country === "United Kingdom") {
+      //console.log(data["Countries"][i].Country + ": " + i);
+      uk = returnCountrydata(
+        data["Countries"][i],
+        areaAndPop.ukPop,
+        areaAndPop.ukArea
+      );
+    }
+  }
+  //france belongs in this data set.
   proccessedData = { us, italy, spain, germany, france, uk };
   return initListOfTasks(proccessedData);
 }
 
+//takes data from getCountryData and returns data in an object.
 function returnCountrydata(data, pop, area) {
   Country = data.Country;
   Confirmed = data.TotalConfirmed;
@@ -95,8 +103,22 @@ function returnCountrydata(data, pop, area) {
   Deaths = data.TotalDeaths;
   Recovered = data.TotalRecovered;
   CasesPerThousand = (Confirmed / (Pop / 1000)).toFixed(2);
-  percentOfPopDeath = ((Deaths / pop) * 100).toFixed(2);
-  percentOfPopRecovered = ((Recovered / pop) * 100).toFixed(2);
+  percentOfConfirmedDeath = ((Deaths / Confirmed) * 100).toFixed(2);
+  percentOfConfirmedRecovered = ((Recovered / Confirmed) * 100).toFixed(2);
+  activeCases = Confirmed - (Deaths + Recovered);
+
+  if (Country === "United States of America") {
+    console.log(
+      Country +
+        ": \nPercent of Population Recovered: " +
+        ((Recovered / pop) * 100).toFixed(2) +
+        "%" +
+        "\n" +
+        "Percent of Population Deaths: " +
+        ((Deaths / pop) * 100).toFixed(2) +
+        "%"
+    );
+  }
 
   return {
     Country: Country,
@@ -106,8 +128,9 @@ function returnCountrydata(data, pop, area) {
     casesPerThousand: CasesPerThousand,
     TotalRecovered: Recovered,
     TotalDeaths: Deaths,
-    percentOfPopDeath: percentOfPopDeath,
-    percentOfPopRecovered: percentOfPopRecovered,
+    percentOfConfirmedDeath: percentOfConfirmedDeath,
+    percentOfConfirmedRecovered: percentOfConfirmedRecovered,
+    activeCases: activeCases,
   };
 }
 
@@ -133,15 +156,20 @@ var displayData = (task) => {
   confirmedDeathsElement.innerText = formatNumber(task["TotalDeaths"]);
 
   let DeathPercentElement = document.createElement("td");
-  DeathPercentElement.innerText = formatNumber(task["percentOfPopDeath"] + "%");
+  DeathPercentElement.innerText = formatNumber(
+    task["percentOfConfirmedDeath"] + "%"
+  );
 
   let confirmedRecoveredElement = document.createElement("td");
   confirmedRecoveredElement.innerText = formatNumber(task["TotalRecovered"]);
 
   let RecoveredPercentElement = document.createElement("td");
   RecoveredPercentElement.innerText = formatNumber(
-    task["percentOfPopRecovered"] + "%"
+    task["percentOfConfirmedRecovered"] + "%"
   );
+
+  let activeCasesElement = document.createElement("td");
+  activeCasesElement.innerHTML = formatNumber(task["activeCases"]);
 
   let casesPerThousandElement = document.createElement("td");
   casesPerThousandElement.innerText = task["casesPerThousand"];
@@ -154,13 +182,9 @@ var displayData = (task) => {
   rowElement.appendChild(DeathPercentElement);
   rowElement.appendChild(confirmedRecoveredElement);
   rowElement.appendChild(RecoveredPercentElement);
+  rowElement.appendChild(activeCasesElement);
   rowElement.appendChild(casesPerThousandElement);
   document.getElementById("table").appendChild(rowElement);
-};
-
-var displayDate = (task) => {
-  let LastUpdatedElement = document.getElementById("Date");
-  LastUpdatedElement.innerText = task["date"] + " @ " + task["time"] + "UTC";
 };
 
 let initListOfTasks = (data) => {
@@ -173,6 +197,13 @@ let initListOfTasks = (data) => {
   });
 };
 
+//takes returned data from displayDate and outputs it to a span in the H1.
+var displayDate = (task) => {
+  let LastUpdatedElement = document.getElementById("Date");
+  LastUpdatedElement.innerText = task["date"] + " @ " + task["time"] + "UTC";
+};
+
+//takes date from source data and converts to more readable data.
 function ConvertDate(date) {
   var LastUpdated = date;
   var array = LastUpdated.split("T", 2);
@@ -180,6 +211,12 @@ function ConvertDate(date) {
   time = array[1].replace("Z", "");
   return { date: date, time: time };
 }
+
+//takes total number of cases from soure data and returns it to be displayed.
+/* function totalCases(data) {
+  data = data["Global"];
+  
+} */
 
 window.onload = function () {
   load = setInterval(function () {

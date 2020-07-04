@@ -7,6 +7,7 @@ table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
     padding: 1em;
+    word-wrap: break-word;
 }
 
 table {
@@ -16,6 +17,7 @@ table {
 td {
     text-align: center;
 }
+
 
 tr:nth-child(2) {
     background-color: yellow;
